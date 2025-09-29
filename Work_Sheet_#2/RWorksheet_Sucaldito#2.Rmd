@@ -109,3 +109,65 @@ x
 #[1] -3  0 -1  0  1  2
 ```
 
+##Exercise 6.
+a. Create a data frame for month, price per liter (php) and purchase-quantity (liter). Write the codes.
+
+```{r setup, include=FALSE}
+month <- c("Jan", "Feb", "March", "Apr", "May", "June")
+price <- c(52.50, 57.25, 60.00, 65.00, 74.25, 54.00)
+quantity <- c(25, 30, 40, 50, 10, 45)
+
+fuel_data <- data.frame(Month = month, Price = price, Quantity = quantity)
+fuel_data
+```
+b. What is the average fuel expenditure of Mr. Cruz from Jan to June? Note: Use weighted.mean(liter, purchase)
+```{r setup, include=FALSE}
+avg_expenditure <- weighted.mean(price, quantity)
+avg_expenditure
+```
+the average fuel expenditure of Mr. Cruz is:
+[1] 59.2625
+
+##Exercise 7. 
+a. Type “rivers” in your R console. Create a vector data with 7 elements, containing the number of elements (length) in rivers, their sum (sum), mean (mean), median (median), variance (var) standard deviation (sd), minimum (min) and maximum (max).
+```{r setup, include=FALSE}
+data <- c(length(rivers), sum(rivers), mean(rivers), median(rivers), var(rivers), sd(rivers), min(rivers), max(rivers))
+data
+```
+b. What are the results?
+[1]    141.0000  83357.0000    591.1844    425.0000
+[5] 243908.4086    493.8708    135.0000   3710.0000
+
+c. Write the code and its outputs.
+```{r setup, include=FALSE}
+data <- c(length(rivers), sum(rivers), mean(rivers), median(rivers), var(rivers), sd(rivers), min(rivers), max(rivers))
+
+names(data) <- c("Length", "Sum", "Mean", "Median", "Variance", "SD", "Min", "Max")
+data
+# Length         Sum        Mean      Median 
+#141.0000  83357.0000    591.1844    425.0000 
+# Variance          SD         Min         Max 
+#243908.4086    493.8708    135.0000   3710.0000 
+```
+
+##Exercise 8.
+a. Create vectors according to the above table. Write the codes.
+```{r setup, include=FALSE}
+power_rank <- 1:25
+celeb_names <- c("Tom Cruise", "Rolling Stones", "Oprah Winfrey", "U2", "Tiger Woods", "Steven Spielberg", "Howard Stern", "50 Cent", "Cast of Sopranos", "Dan Brown", "Bruce Springsteen", "Donald Trump", "Muhammad Ali", "Phaul McCartney", "George Lucas", "Elton John", "David Letterman", "Phil Mickelson", "J.K Rowling", "Brad Pitt", "Peter Jackson", "Dr. Phil McGraw", "Jay Lenon", "Celine Dion", "Kobe Bryant")
+pay <- c(65, 90, 225, 110, 90, 332, 302, 41, 52, 88, 55, 44, 55, 40, 233, 44, 40, 47, 75, 25, 39, 45, 32, 40, 31)
+
+forbes <- data.frame(Power_Rank = power_rank, Celebrety_Name = celeb_names, Pay = pay)
+forbes
+```
+b. Modify the power ranking and pay of J.K. Rowling. Change power ranking to 15 and pay to 90. Write the codes and its output.
+```{r setup, include=FALSE}
+idx <- which(forbes$Celebrity == "J.K Rowling")
+forbes$Power[idx] <- 15
+forbes$Pay[idx]   <- 90
+
+forbes[idx, ]
+```
+
+c. Interpret the data.
+- The Forbes lists the 25 most influential celebs, which are ranked by their influence or annual earnings. Large incomes tend to translate into a higher spot (as was the case with Spielberg, Oprah, Lucas), fame and media presence also play a significant role, as in the case with Tom Cruise. Re-calculating the figures of J.K. Rowling, she now ranks 15 with higher wages, which proves the level of influence she possesses on the world as an author. Overall, the evidence indicates that celebrity power is a combination of money, fame and cultural influence.
