@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 a. Write the codes.
 ```{r}
-# Create data frame with 20 respondents (added Persons_at_Home)
 household <- data.frame(
   Sex = c("Male", "Female", "Female", "Male", "Male",
           "Female", "Female", "Male", "Female", "Male",
