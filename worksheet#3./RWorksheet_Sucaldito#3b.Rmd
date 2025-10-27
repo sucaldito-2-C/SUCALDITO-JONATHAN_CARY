@@ -68,11 +68,17 @@ e. Extract 3rd and 5th row with 2nd and 4th column. Write the codes and its resu
 household[c(3,5), c(2,4)]
 ```
 
-g. Select only all Males respondent that their father occupation was farmer. Write the
-codes and its output.
+f. Select the variable types of houses then store the vector that results as types_houses.
+Write the codes.
 ```{r}
 types_houses <- household$Type_of_House
 types_houses
+```
+g. Select only all Males respondent that their father occupation was farmer. Write the
+codes and its output.
+```{r}
+subset_males_farmer <- household[household$Sex == "Male" & household$Father_Occupation == "Farmer", ]
+print(subset_males_farmer)
 ```
 
 h. Select only all females respondent that have greater than or equal to 5 number of siblings attending school. Write the codes and its outputs.
@@ -113,6 +119,22 @@ b. Convert the Sex into factor using factor() function and change it into intege
 data$Sex <- factor(data$Sex, levels = c("Male", "Female"), labels = c(1, 2))
 data$Sex <- as.integer(data$Sex)
 data
+```
+
+c. Convert the Type of Houses into factor and change it into integer. [Legend: Wood
+= 1; Congrete = 2; Semi-Congrete = 3]. Write the R codes and its output.
+```{r} 
+data$Type_of_House <- trimws(data$Type_of_House)
+
+data$Type_of_House <- factor(data$Type_of_House,
+                             levels = c("Wood", "Concrete", "Semi-Concrete"),
+                             labels = c(1, 2, 3))
+
+data$Type_of_House <- as.integer(data$Type_of_House)
+
+data$Type_of_House
+
+
 ```
 
 d. On father’s occupation, factor it as Farmer = 1; Driver = 2; and Others = 3. What
