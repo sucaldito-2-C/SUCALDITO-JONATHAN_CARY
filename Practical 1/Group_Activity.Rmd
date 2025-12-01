@@ -1,0 +1,159 @@
+---
+title: "Group Activity"
+author: "Jonathan Cary Sucaldito"
+date: "2025-12-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages(c("rvest", "stringr", "lubridate","dplyr", "ggplot2")) 
+```
+
+
+```{r}
+# Load required libraries
+library(rvest)
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(lubridate)
+```
+
+```{r}
+# Function to extract and analyze arXiv papers (TOPIC: STATISTICS)
+analyze_statistics <- function() {
+  cat("=== ARXIV STATISTICS ANALYSIS ===\n\n")
+ 
+  # arXiv ADVANCED SEARCH URL (Statistics in Title)
+  url <- "https://arxiv.org/search/advanced?advanced=1&terms-0-term=Statistics&terms-0-operator=AND&terms-0-field=title&classification-physics_archives=all&classification-statistics=y&classification-include_cross_list=include&date-filter_by=all_dates&date-year=&date-from_date=&date-to_date=&date-date_type=submitted_date&abstracts=show&size=200&order=-announced_date_first"
+ 
+  # Extract data from arXiv (use a user-agent to reduce chance of blocking)
+  cat("Extracting data from arXiv...\n")
+  webpage <- tryCatch({
+    read_html(url, user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"))
+  }, error = function(e) {
+    cat("Error reading webpage. Using sample data.\n")
+    return(NULL)
+  })
+ 
+  if (is.null(webpage)) {
+    # Fallback sample data
+    set.seed(123)
+    years <- sample(2015:2024, 200, replace = TRUE)
+    papers_data <- data.frame(
+      title = paste("Statistics Paper", 1:200),
+      authors = paste("Author", 1:200),
+      year = years,
+      stringsAsFactors = FALSE
+    )
+  } else {
+    # Extract list of papers
+    papers <- html_nodes(webpage, "li.arxiv-result")
+    cat("Found", length(papers), "papers\n")
+   
+    papers_data <- data.frame(
+      title = character(),
+      authors = character(),
+      year = numeric(),
+      stringsAsFactors = FALSE
+    )
+   
+    for (i in seq_along(papers)) {
+      paper <- papers[i]
+     
+      # Extract Title
+      title <- paper %>%
+        html_node("p.title") %>%
+        html_text2() %>%
+        str_trim()
+     
+      # Extract Authors
+      authors <- paper %>%
+        html_nodes("p.authors a") %>%
+        html_text2() %>%
+        paste(collapse = ", ")
+     
+      # Extract Year
+      meta <- paper %>% html_node("div.meta") %>% html_text2()
+      year <- str_extract(meta, "\\b(20\\d{2})\\b")
+      year <- as.numeric(year)
+     
+      papers_data <- rbind(papers_data, data.frame(
+        title = ifelse(is.na(title) || title == "", "Unknown Title", title),
+        authors = ifelse(is.na(authors) || authors == "", "Unknown Authors", authors),
+        year = ifelse(is.na(year), 2023, year),
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+ 
+  # Arrange by year
+  papers_data <- papers_data %>% arrange(desc(year))
+ 
+  # Count papers per year
+  yearly_counts <- papers_data %>%
+    group_by(year) %>%
+    summarise(count = n()) %>%
+    arrange(year)
+ 
+  # Summary
+  cat("\n=== ANALYSIS SUMMARY ===\n")
+  cat("Total papers:", nrow(papers_data), "\n")
+  cat("Year range:", min(yearly_counts$year), "-", max(yearly_counts$year), "\n")
+  print(yearly_counts)
+ 
+  # Ensure numeric year & count
+  yearly_counts$year <- as.numeric(yearly_counts$year)
+  yearly_counts$count <- as.numeric(yearly_counts$count)
+  
+  # Plot
+  p <- ggplot(yearly_counts, aes(x = year, y = count)) +
+    geom_line(color = "#2E86AB", size = 1.5) +
+    geom_point(color = "#A23B72", size = 3) +
+    geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "darkred") +
+    labs(
+      title = "arXiv Statistics Papers - Time Series",
+      subtitle = paste("Total Papers Analyzed:", nrow(papers_data)),
+      x = "Year",
+      y = "Number of Papers",
+      caption = "Data source: arXiv.org | Search: 'Statistics' in Title"
+    ) +
+    theme_minimal()
+  
+  print(p)
+  
+  # Save outputs
+  ggsave("statistics_timeline.png", p, width = 10, height = 6, dpi = 300)
+  write.csv(papers_data, "statistics_papers.csv", row.names = FALSE)
+  write.csv(yearly_counts, "statistics_yearly_counts.csv", row.names = FALSE)
+  
+  cat("\n=== OUTPUT FILES SAVED ===\n")
+  cat("1. statistics_timeline.png\n")
+  cat("2. statistics_papers.csv\n")
+  cat("3. statistics_yearly_counts.csv\n")
+  
+  # Display sample papers
+  cat("\n=== SAMPLE OF PAPERS (5 most recent) ===\n")
+  for (i in 1:min(5, nrow(papers_data))) {
+    cat("\n--------------------------------------------\n")
+    cat("PAPER", i, "\n")
+    cat("Title:", papers_data$title[i], "\n")
+    cat("Year:", papers_data$year[i], "\n")
+    cat("Authors:", substr(papers_data$authors[i], 1, 80), "...\n")
+  }
+  
+  return(list(
+    papers = papers_data,
+    yearly_counts = yearly_counts,
+    plot = p
+  ))
+} # <-- missing closing brace added here
+
+# Run analysis
+results <- analyze_statistics()
+```
+
