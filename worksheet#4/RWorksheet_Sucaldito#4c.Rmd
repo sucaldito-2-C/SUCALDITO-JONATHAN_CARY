@@ -65,6 +65,7 @@ unique_models <- mpg %>%
 
 unique_models
 ```
+
 ```{r}
 #2B.
 
@@ -74,6 +75,7 @@ ggplot(unique_models, aes(x = reorder(manufacturer, -unique_models), y = unique_
   ggtitle("Number of Unique Models by Manufacturer") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
 ```{r}
 #2A.
 
@@ -84,6 +86,7 @@ ggplot(mpg, aes(x = reorder(manufacturer, model, function(x) length(unique(x))),
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
 ```{r}
 #2B.
 
@@ -108,6 +111,7 @@ mpg %>%
   summarise(count = n()) %>%
   arrange(desc(count))
 ```
+
 ```{r}
 #4A.
 
@@ -124,6 +128,7 @@ ggplot(top_20_models, aes(x = reorder(model, -count), y = count, fill = model)) 
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   scale_fill_manual(values = colorRampPalette(brewer.pal(12, "Set3"))(20))     
 ```
+
 ```{r}
 #4B.
 
@@ -140,6 +145,7 @@ ggplot(top_20_models, aes(x = model, y = count, fill = model)) +
   ggtitle("Top 20 Car Models by Number of Cars") +
   theme(axis.text.y = element_text(size = 9), legend.position = "none")
 ```
+
 ```{r}
 #5.
 
@@ -164,6 +170,7 @@ ggplot(mpg, aes(x = displ, y = hwy, color = displ)) +
   xlab("Engine Displacement (L)") + ylab("Highway MPG") +
   scale_color_gradient(low = "blue", high = "red")
 ```
+
 ```{r}
 #6. I AM NOT SURE MAAM IF THE TRAFFIC DATA SET IS CORRECT, I HAVE NO IDEA WHERE TO GET THE DATA
 
@@ -222,28 +229,61 @@ str(alexa)
 #7B.
 load("variations.RData")
 
+numeric_col <- names(variations)[sapply(variations, is.numeric)][1]
+
 variations %>%
   group_by(variation) %>%
-  summarise(total = sum(count))
+  summarise(total = sum(.data[[numeric_col]]))
+
 ```
 
 ```{r}
 #7C.
+num_col <- names(variations)[sapply(variations, is.numeric)][1]
 
-ggplot(variations, aes(x = variation, y = count, fill = variation)) +
+ggplot(variations, aes(x = variation, y = .data[[num_col]], fill = variation)) +
   geom_bar(stat = "identity") +
-  xlab("Variation") + ylab("Count") +
+  xlab("Variation") + ylab(num_col) +
   ggtitle("Count of Each Variation") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")   
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
 ```
 ```{r}
 #7D.
+num_col <- names(variations)[sapply(variations, is.numeric)][1]
 
-#My variations data set has no date.
+variations$index <- 1:nrow(variations)
+
+ggplot(variations, aes(x = index, y = .data[[num_col]])) +
+  geom_line() +
+  geom_point() +
+  xlab("Entry Number") +
+  ylab("Number of Verified Reviews") +
+  ggtitle("Verified Reviews per Entry (No Date Available)") +
+  theme_minimal()
+
+#My variations dataset has no date, so I used the entry number as a substitute to create the line plot.
 ```
 
 ```{r}
 #7E.
+variation_col <- names(variations)[sapply(variations, is.character) | sapply(variations, is.factor)][1]
+num_col <- names(variations)[sapply(variations, is.numeric)][1]
 
-#My variations data set contains also no ratings
+variation_summary <- variations %>%
+  group_by(.data[[variation_col]]) %>%
+  summarise(total = sum(.data[[num_col]], na.rm = TRUE))
+
+variation_summary %>% arrange(desc(total)) %>% head(1)
+
+ggplot(variation_summary,
+       aes(x = .data[[variation_col]], y = total, fill = .data[[variation_col]])) +
+  geom_col() +
+  xlab("Variation") +
+  ylab("Total Count") +
+  ggtitle("Count per Variation") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+#My variations dataset has no ratings, so I used the count values instead to identify which variation has the highest total.
 ```
