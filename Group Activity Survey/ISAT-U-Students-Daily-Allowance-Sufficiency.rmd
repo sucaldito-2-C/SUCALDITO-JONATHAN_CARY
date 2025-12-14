@@ -1,0 +1,351 @@
+---
+title: "ISAT-U Students’ Daily Allowance Sufficiency"
+author:
+  - Angelo A. Garrido
+  - Kyle Johnsen Anastacio
+  - Syndirc James Junsay
+  - Jonathan Cary Sucaldito
+date: "2025-12-10"
+output: pdf_document
+---
+```{r, echo=FALSE}
+
+cat("I. Introduction\n\n")
+cat("Daily allowance plays an important role in meeting the everyday needs of 
+    college students, including transportation, meals, school supplies, and 
+    other essential expenses. For students of Iloilo Science and Technology 
+    University (ISAT-U), the adequacy of their daily allowance can greatly 
+    influence their academic experience and overall well-being.\n\nThis study 
+    aims to assess whether the daily allowance of ISAT-U college students is 
+    sufficient to cover their daily needs. Using data gathered from a student 
+    survey, this research analyzes students’ daily allowance, spending patterns, 
+    and perceptions of financial sufficiency. The collected data are presented 
+    through graphical representations to clearly illustrate trends and 
+    differences among respondents.\n\n")
+```
+
+```{r}
+data <- read.csv("Daily-allowance.csv")
+names(data)
+```
+
+```{r}
+library(ggplot2)
+sex_data <- data.frame(
+Sex = c("Female", "Male"),
+Count = c(24, 27)
+)
+
+sex_data$Percent <- round(sex_data$Count / sum(sex_data$Count) * 100)
+
+ggplot(sex_data, aes(x = "", y = Count, fill = Sex)) +
+geom_bar(stat = "identity", width = 1) +
+coord_polar(theta = "y") +
+theme_void() +
+geom_text(aes(label = paste0(Percent, "%")),
+position = position_stack(vjust = 0.5)) +
+scale_fill_manual(values = c("Female" = "#FF6B6B", "Male" = "#45B7D1")) +
+labs(title = "Distribution of Male and Female Students")
+
+```
+
+```{r, echo=FALSE}
+cat("The survey results show that the student population in the sample is fairly 
+    balanced in terms of gender. Males slightly outnumber females, with 27 male 
+    students (53%) compared to 24 female students (47%). This near-equal 
+    distribution suggests that any analysis of daily allowance sufficiency will 
+    fairly represent the perspectives of both genders. Additionally, the pie 
+    chart clearly visualizes this balance, making it easy to see that neither 
+    gender dominates the sample, which supports more equitable comparisons in 
+    subsequent analyses.\n\n")
+```
+
+```{r}
+numeric_ages <- as.numeric(data$Age)
+numeric_ages <- numeric_ages[!is.na(numeric_ages)]
+numeric_ages <- c(numeric_ages, 18)
+
+age_counts <- table(numeric_ages)
+age_data <- as.data.frame(age_counts)
+colnames(age_data) <- c("Age", "Count")
+age_data$Percent <- round(age_data$Count / sum(age_data$Count) * 100)
+
+ggplot(age_data, aes(x = "", y = Count, fill = Age)) +
+geom_bar(stat = "identity", width = 1) +
+coord_polar(theta = "y") +
+theme_void() +
+geom_text(aes(label = paste0(Percent, "%")),
+position = position_stack(vjust = 0.5)) +
+scale_fill_brewer(palette = "Pastel1") +
+labs(title = "ISAT-U College Students")
+
+```
+
+```{r, echo=FALSE}
+cat("Most respondents are 19 and 20 years old, indicating that the typical
+    college student in the survey falls within this age range. Fewer students 
+    are younger (18) or older (21–22), which provides context for understanding 
+    their daily allowance usage patterns.\n\n")
+
+```
+
+
+```{r fig.width = 8, fig.height = 5}
+
+data <- read.csv("Daily-allowance.csv", stringsAsFactors = FALSE)
+
+allowance_names <- c(
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....50.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....100.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....150.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....200.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....250.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....300.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....350.",
+  "Please.select.and.rate.how.sufficient.you.think.each.amount.of.daily.allowance.for.your.needs....400."
+)
+
+allowance_cols <- match(allowance_names, names(data))
+names(data)[allowance_cols] <- paste0("pesos", c(50,100,150,200,250,300,350,400))
+
+convert <- c(
+  "Not Enough" = 1,
+  "Slightly Enough" = 2,
+  "Moderately Enough" = 3,
+  "Enough" = 4,
+  "More than Enough" = 5
+)
+
+data[allowance_cols] <- lapply(data[allowance_cols], function(x) {
+  x <- trimws(x)
+  x <- gsub("\\.+", "", x)
+  x <- gsub("[^A-Za-z ]", "", x)
+  x <- convert[x]
+  as.numeric(x)
+})
+
+counts <- sapply(data[allowance_cols], function(x) {
+  table(factor(x, levels = 1:5))
+})
+
+rownames(counts) <- c("Not Enough", "Slightly Enough", "Moderately Enough",
+                      "Enough", "More than Enough")
+
+colors <- c("red","orange","yellow","green","blue")
+
+barplot(counts,
+        col = colors,
+        main = "Allowance Amounts Considered Sufficient by Students",
+        xlab = "Allowance Amount (PHP)",
+        ylab = "Number of Students",
+        legend.text = rownames(counts),
+        args.legend = list(x = "topright", inset = c(-0.04, 0.07), cex = 0.6),
+        names.arg = paste0("₱", c(50,100,150,200,250,300,350,400)),
+        las = 2,
+        beside = TRUE,
+        ylim = c(0, 50))
+
+counts_table <- as.data.frame(counts)
+colnames(counts_table) <- paste0("₱", c(50,100,150,200,250,300,350,400))
+counts_table
+
+```
+
+
+```{r, echo=FALSE}
+cat("As shown in the bar graph, the data suggest that a daily allowance of 
+    around ₱250 to ₱300 is commonly rated as Moderately Enough to Enough, 
+    indicating that it is sufficient to meet students’ daily needs in school. 
+    In contrast, at ₱50 and ₱100, most students rated the allowance as Not 
+    Enough, reflecting insufficiency. Meanwhile, allowances ranging from ₱300 
+    to ₱400 received higher ratings, with many students perceiving them as 
+    Enough or More than Enough.")
+
+```
+
+```{r}
+
+q1 <- data[["My.daily.allowance.is.enough.to.cover.my.transportation.expenses."]]
+
+q1_split <- unlist(strsplit(q1, ";"))
+q1_split <- trimws(q1_split)
+q1_split <- tolower(q1_split)
+
+q1_split[q1_split == "strongly disagree"] <- "Strongly Disagree"
+q1_split[q1_split == "disagree"] <- "Disagree"
+q1_split[q1_split == "neutral"] <- "Neutral"
+q1_split[q1_split == "agree"] <- "Agree"
+q1_split[q1_split == "strongly agree"] <- "Strongly Agree"
+
+q1_count <- table(q1_split)
+
+colors <- c("#FF6B6B", "#FFB347", "#FFFF66", "#96CEB4", "#45B7D1")
+
+pie(q1_count,
+    labels = paste(names(q1_count), round(q1_count/sum(q1_count)*100, 1), "%"),
+    col = colors,
+    main = "Transportation")
+
+```
+
+```{r, echo=FALSE}
+cat("The pie chart indicates that the majority of respondents believe their 
+    daily allowance is sufficient to cover transportation expenses. More than 
+    half (57.1%) of the respondents selected Agree, while an additional 23.2% 
+    chose Strongly Agree, showing that most students can afford their daily 
+    transportation needs. Meanwhile, 14.3% of respondents selected Neutral, 
+    suggesting some uncertainty or variability in transportation costs. Only a 
+    small percentage Disagreed (3.6%) or Strongly Disagreed (1.8%), indicating 
+    that transportation expenses are generally manageable for most students.")
+```
+
+  
+```{r}
+
+q1 <- data[["My.daily.allowance.is.enough.to.cover.my.school.materials.and.supplies."]]
+
+q1_split <- unlist(strsplit(q1, ";"))
+q1_split <- trimws(q1_split)
+q1_split <- tolower(q1_split)
+
+q1_split[q1_split == "strongly disagree"] <- "Strongly Disagree"
+q1_split[q1_split == "disagree"] <- "Disagree"
+q1_split[q1_split == "neutral"] <- "Neutral"
+q1_split[q1_split == "agree"] <- "Agree"
+q1_split[q1_split == "strongly agree"] <- "Strongly Agree"
+
+q1_count <- table(q1_split)
+
+colors <- c("#FF6B6B", "#FFB347", "#FFFF66", "#96CEB4", "#45B7D1")
+
+pie(q1_count,
+    labels = paste(names(q1_count), round(q1_count/sum(q1_count)*100, 1), "%"),
+    col = colors,
+    main = "School Materials and Supplies")
+
+```
+
+```{r, echo=FALSE}
+cat("The pie chart shows that a plurality of respondents believe their daily 
+    allowance is sufficient to cover school materials and supplies. Nearly half 
+    (46.4%) of the respondents selected Agree, while a small proportion (3.6%) 
+    chose Strongly Agree, indicating moderate confidence in meeting school 
+    material expenses. However, 25.0% of respondents selected Neutral, 
+    suggesting uncertainty or inconsistency in covering these costs. Meanwhile, 
+    a notable portion Disagreed (21.4%) or Strongly Disagreed (3.6%), indicating 
+    that a considerable number of students find their allowance insufficient for 
+    school materials and supplies.")
+```
+
+```{r}
+
+q1 <- data[["My.daily.allowance.is.enough.to.allow.me.to.save.a.small.amount.regularly."]]
+
+q1_split <- unlist(strsplit(q1, ";"))
+q1_split <- trimws(q1_split)
+q1_split <- tolower(q1_split)
+
+q1_split[q1_split == "strongly disagree"] <- "Strongly Disagree"
+q1_split[q1_split == "disagree"] <- "Disagree"
+q1_split[q1_split == "neutral"] <- "Neutral"
+q1_split[q1_split == "agree"] <- "Agree"
+q1_split[q1_split == "strongly agree"] <- "Strongly Agree"
+
+q1_count <- table(q1_split)
+
+colors <- c("#FF6B6B", "#FFB347", "#FFFF66", "#96CEB4", "#45B7D1")
+
+pie(q1_count,
+    labels = paste(names(q1_count), round(q1_count/sum(q1_count)*100, 1), "%"),
+    col = colors,
+    main = "Saving Small Amounts")
+
+```
+
+```{r, echo=FALSE}
+cat("The pie chart shows that 38.2% of the respondents Agreed that their daily 
+    allowance is enough to allow them to save a small amount regularly, while 
+    10.9% Strongly Agreed, indicating that a portion of students are able to 
+    save. Meanwhile, 27.3% of respondents selected Neutral, suggesting 
+    uncertainty or irregular saving ability. On the other hand, 18.2% 
+    Disagreed and *5.5% Strongly Disagreed, showing that some students 
+    find it difficult to save due to limited allowance.")
+```
+
+```{r}
+
+
+q1 <- data[["My.daily.allowance.is.enough.to.buy.food.and.snacks.during.the.day."]]
+
+q1_split <- unlist(strsplit(q1, ";"))
+q1_split <- trimws(q1_split)
+q1_split <- tolower(q1_split)
+
+q1_split[q1_split == "strongly disagree"] <- "Strongly Disagree"
+q1_split[q1_split == "disagree"] <- "Disagree"
+q1_split[q1_split == "neutral"] <- "Neutral"
+q1_split[q1_split == "agree"] <- "Agree"
+q1_split[q1_split == "strongly agree"] <- "Strongly Agree"
+
+q1_count <- table(q1_split)
+
+colors <- c("#FF6B6B", "#FFB347", "#FFFF66", "#96CEB4", "#45B7D1")
+
+pie(q1_count,
+    labels = paste(names(q1_count), round(q1_count/sum(q1_count)*100, 1), "%"),
+    col = colors,
+    main = "Food and Snacks")
+
+
+
+
+
+```
+
+```{r, echo=FALSE}
+
+cat("As shown in the pie chart, the majority of respondents believe that their 
+    daily allowance is sufficient to buy food and snacks during the day. More 
+    than half (52.7%) of the respondents selected Agree, while *5.5% Strongly 
+    Agree, indicating that most students are able to meet their food needs in 
+    school. Meanwhile, 30.9% chose Neutral, suggesting uncertainty or 
+    inconsistency in food sufficiency. Only a small portion Disagreed (9.1%) 
+    or Strongly Disagreed (1.8%), showing minimal concern regarding 
+    food affordability.")
+```
+
+```{r}
+
+q1 <- data[["My.daily.allowance.is.enough.to.pay.for.occasional.school.projects.or.contributions."]]
+
+q1_split <- unlist(strsplit(q1, ";"))
+q1_split <- trimws(q1_split)
+q1_split <- tolower(q1_split)
+
+q1_split[q1_split == "strongly disagree"] <- "Strongly Disagree"
+q1_split[q1_split == "disagree"] <- "Disagree"
+q1_split[q1_split == "neutral"] <- "Neutral"
+q1_split[q1_split == "agree"] <- "Agree"
+q1_split[q1_split == "strongly agree"] <- "Strongly Agree"
+
+q1_count <- table(q1_split)
+
+colors <- c("#FF6B6B", "#FFB347", "#FFFF66", "#96CEB4", "#45B7D1")
+
+pie(q1_count,
+    labels = paste(names(q1_count), round(q1_count/sum(q1_count)*100, 1), "%"),
+    col = colors,
+    main = "Occasional Projects or Contribution")
+```
+
+```{r, echo=FALSE}
+
+cat("The pie chart shows that most respondents are uncertain about whether their 
+    daily allowance is enough to pay for occasional school projects or 
+    contributions. The largest percentage (41.1%) selected Neutral, indicating
+    mixed experiences. Equal proportions of respondents Agreed (26.8%) and 
+    Disagreed (26.8%), reflecting divided opinions. Very few respondents 
+    expressed strong views, with only *1.8% Strongly Agreeing and *3.6% 
+    Strongly Disagreeing. This suggests that occasional school expenses may not 
+    be consistently covered by students’ daily allowance.")
+```
